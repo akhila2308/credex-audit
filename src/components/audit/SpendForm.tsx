@@ -1,18 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
 import { AuditInput, ToolEntry, ToolName, UseCase } from '@/types'
 import { PRICING_DATA } from '@/lib/pricing-data'
 import { Plus, Trash2, Zap } from 'lucide-react'
@@ -52,6 +40,39 @@ interface SpendFormProps {
   isLoading: boolean
 }
 
+const inputStyle = {
+  background: 'var(--muted)',
+  border: '1px solid var(--border)',
+  borderRadius: '0.5rem',
+  color: 'var(--foreground)',
+  padding: '0.5rem 0.75rem',
+  fontSize: '0.875rem',
+  width: '100%',
+  outline: 'none',
+  transition: 'border-color 0.2s',
+  fontFamily: 'var(--font-body)'
+}
+
+const selectStyle = {
+  ...inputStyle,
+  cursor: 'pointer',
+  appearance: 'none' as const,
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b8a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 0.75rem center',
+  paddingRight: '2.5rem'
+}
+
+const labelStyle = {
+  fontSize: '0.7rem',
+  fontWeight: 600,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase' as const,
+  color: 'var(--muted-foreground)',
+  marginBottom: '0.35rem',
+  display: 'block'
+}
+
 export default function SpendForm({ onSubmit, isLoading }: SpendFormProps) {
   const [tools, setTools] = useState<ToolEntry[]>([defaultTool()])
   const [teamSize, setTeamSize] = useState(5)
@@ -74,10 +95,7 @@ export default function SpendForm({ onSubmit, isLoading }: SpendFormProps) {
   }, [tools, teamSize, useCase])
 
   const addTool = () => setTools(prev => [...prev, defaultTool()])
-
-  const removeTool = (id: string) =>
-    setTools(prev => prev.filter(t => t.id !== id))
-
+  const removeTool = (id: string) => setTools(prev => prev.filter(t => t.id !== id))
   const updateTool = (id: string, updates: Partial<ToolEntry>) =>
     setTools(prev => prev.map(t => (t.id === id ? { ...t, ...updates } : t)))
 
@@ -92,180 +110,209 @@ export default function SpendForm({ onSubmit, isLoading }: SpendFormProps) {
 
   const totalMonthly = tools.reduce((sum, t) => sum + t.monthlySpend, 0)
 
-  const handleSubmit = () => {
-    onSubmit({ tools, teamSize, useCase })
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Team Size</Label>
-          <Input
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* Team info row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+        <div>
+          <label style={labelStyle}>Team Size</label>
+          <input
             type="number"
             min={1}
             value={teamSize}
             onChange={e => setTeamSize(Number(e.target.value))}
-            placeholder="e.g. 5"
+            style={inputStyle}
           />
         </div>
-        <div className="space-y-2">
-          <Label>Primary Use Case</Label>
-          <Select value={useCase} onValueChange={v => setUseCase(v as UseCase)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {USE_CASE_OPTIONS.map(opt => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div>
+          <label style={labelStyle}>Primary Use Case</label>
+          <select
+            value={useCase}
+            onChange={e => setUseCase(e.target.value as UseCase)}
+            style={selectStyle}
+          >
+            {USE_CASE_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label className="text-base font-semibold">Your AI Tools</Label>
-          <Badge variant="secondary">
+      {/* Tools section */}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+          <label style={labelStyle}>Your AI Tools</label>
+          <span style={{
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            padding: '0.2rem 0.6rem',
+            borderRadius: '99px',
+            background: 'rgba(124,106,255,0.15)',
+            color: 'var(--primary)',
+            border: '1px solid rgba(124,106,255,0.3)'
+          }}>
             Total: ${totalMonthly.toFixed(0)}/mo
-          </Badge>
+          </span>
         </div>
 
-        {tools.map((tool, index) => (
-          <Card key={tool.id} className="border border-border">
-            <CardHeader className="pb-3 pt-4 px-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {tools.map((tool, index) => (
+            <div key={tool.id} style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid var(--border)',
+              borderRadius: '0.75rem',
+              padding: '1rem',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', fontWeight: 500 }}>
                   Tool {index + 1}
-                </CardTitle>
+                </span>
                 {tools.length > 1 && (
                   <button
                     onClick={() => removeTool(tool.id)}
-                    className="text-muted-foreground hover:text-destructive transition-colors"
+                    style={{ color: 'var(--muted-foreground)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--destructive)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted-foreground)')}
                   >
-                    <Trash2 size={15} />
+                    <Trash2 size={13} />
                   </button>
                 )}
               </div>
-            </CardHeader>
-            <CardContent className="px-4 pb-4 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Tool</Label>
-                  <Select
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                <div>
+                  <label style={labelStyle}>Tool</label>
+                  <select
                     value={tool.toolName}
-                    onValueChange={v => {
-                      const newTool = v as ToolName
+                    onChange={e => {
+                      const newTool = e.target.value as ToolName
                       const firstPlan = Object.keys(PRICING_DATA[newTool]?.plans ?? {})[0] ?? 'pro'
                       const firstPrice = PRICING_DATA[newTool]?.plans[firstPlan]?.pricePerSeat ?? 0
-                      updateTool(tool.id, {
-                        toolName: newTool,
-                        plan: firstPlan,
-                        monthlySpend: firstPrice * tool.seats
-                      })
+                      updateTool(tool.id, { toolName: newTool, plan: firstPlan, monthlySpend: firstPrice * tool.seats })
                     }}
+                    style={selectStyle}
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TOOL_OPTIONS.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {TOOL_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
                 </div>
-
-                <div className="space-y-1">
-                  <Label className="text-xs">Plan</Label>
-                  <Select
+                <div>
+                  <label style={labelStyle}>Plan</label>
+                  <select
                     value={tool.plan}
-                    onValueChange={v => {
-                      const price = PRICING_DATA[tool.toolName]?.plans[v]?.pricePerSeat ?? 0
-                      updateTool(tool.id, {
-                        plan: v,
-                        monthlySpend: price * tool.seats
-                      })
+                    onChange={e => {
+                      const price = PRICING_DATA[tool.toolName]?.plans[e.target.value]?.pricePerSeat ?? 0
+                      updateTool(tool.id, { plan: e.target.value, monthlySpend: price * tool.seats })
                     }}
+                    style={selectStyle}
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getPlansForTool(tool.toolName).map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {getPlansForTool(tool.toolName).map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Seats</Label>
-                  <Input
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label style={labelStyle}>Seats</label>
+                  <input
                     type="number"
                     min={1}
                     value={tool.seats}
                     onChange={e => {
                       const seats = Number(e.target.value)
                       const price = PRICING_DATA[tool.toolName]?.plans[tool.plan]?.pricePerSeat ?? 0
-                      updateTool(tool.id, {
-                        seats,
-                        monthlySpend: price * seats
-                      })
+                      updateTool(tool.id, { seats, monthlySpend: price * seats })
                     }}
+                    style={inputStyle}
                   />
                 </div>
-
-                <div className="space-y-1">
-                  <Label className="text-xs">Monthly Spend ($)</Label>
-                  <Input
+                <div>
+                  <label style={labelStyle}>Monthly Spend ($)</label>
+                  <input
                     type="number"
                     min={0}
                     value={tool.monthlySpend}
-                    onChange={e =>
-                      updateTool(tool.id, { monthlySpend: Number(e.target.value) })
-                    }
+                    onChange={e => updateTool(tool.id, { monthlySpend: Number(e.target.value) })}
+                    style={inputStyle}
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          ))}
+        </div>
 
-        <Button
-          variant="outline"
-          className="w-full border-dashed"
+        <button
           onClick={addTool}
+          style={{
+            width: '100%',
+            marginTop: '0.75rem',
+            padding: '0.6rem',
+            background: 'transparent',
+            border: '1px dashed var(--border)',
+            borderRadius: '0.75rem',
+            color: 'var(--muted-foreground)',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.4rem',
+            transition: 'all 0.2s',
+            fontFamily: 'var(--font-body)'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = 'var(--primary)'
+            e.currentTarget.style.color = 'var(--primary)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = 'var(--border)'
+            e.currentTarget.style.color = 'var(--muted-foreground)'
+          }}
         >
-          <Plus size={15} className="mr-2" />
+          <Plus size={13} />
           Add another tool
-        </Button>
+        </button>
       </div>
 
-      <Button
-        className="w-full"
-        size="lg"
-        onClick={handleSubmit}
+      {/* Submit */}
+      <button
+        onClick={() => onSubmit({ tools, teamSize, useCase })}
         disabled={isLoading || tools.length === 0}
+        style={{
+          width: '100%',
+          padding: '0.85rem',
+          background: isLoading ? 'rgba(107,127,212,0.3)' : 'linear-gradient(135deg, var(--primary), #9aaae8)',
+          border: 'none',
+          borderRadius: '0.75rem',
+          color: 'white',
+          fontSize: '0.95rem',
+          fontWeight: 700,
+          cursor: isLoading ? 'not-allowed' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
+          transition: 'all 0.2s',
+          fontFamily: 'var(--font-display)',
+          letterSpacing: '0.01em',
+          boxShadow: isLoading ? 'none' : '0 4px 20px rgba(107,127,212,0.3)'
+        }}
       >
         {isLoading ? (
-          'Analyzing your spend...'
+          <>
+            <span className="shimmer" style={{ width: 14, height: 14, borderRadius: '50%', display: 'inline-block' }} />
+            Analyzing your spend...
+          </>
         ) : (
           <>
-            <Zap size={16} className="mr-2" />
+            <Zap size={15} />
             Run Free Audit
           </>
         )}
-      </Button>
+      </button>
     </div>
   )
 }

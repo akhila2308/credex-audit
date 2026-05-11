@@ -33,7 +33,7 @@ Total annual savings identified: $${audit.totalAnnualSavings.toFixed(0)}
 Write a personalized 80-100 word summary paragraph for this team. Be specific, use the actual numbers, mention the biggest saving opportunity by name, and end with one actionable sentence. Do not use bullet points. Write in second person ("your team").`
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-8b-8192',
+      model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 200,
       temperature: 0.7
@@ -48,10 +48,9 @@ Write a personalized 80-100 word summary paragraph for this team. Be specific, u
 
     return NextResponse.json({ summary })
   } catch (err) {
-    console.error('Summary error:', err)
-    const { audit }: { audit: AuditResult } = await req.json().catch(() => ({ audit: null }))
+    console.error('Summary error FULL:', JSON.stringify(err, Object.getOwnPropertyNames(err)))
     return NextResponse.json({
-      summary: audit ? generateFallbackSummary(audit) : 'Your AI spend audit is complete. Review the recommendations above to optimize your tooling costs.'
+      summary: 'Your AI spend audit is complete. Review the recommendations above to optimize your tooling costs.'
     })
   }
 }
